@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with WPPConnect.  If not, see <https://www.gnu.org/licenses/>.
  */
-import { Browser, BrowserContext, LaunchOptions, Page } from 'puppeteer';
+import { Browser, BrowserContext, Page, launch } from 'puppeteer';
 import { Logger } from 'winston';
 import { SessionToken, TokenStore } from '../token-store';
 import { defaultLogger } from '../utils/logger';
@@ -52,7 +52,7 @@ export interface CreateConfig {
   /**
    * Will be passed to puppeteer.launch
    */
-  puppeteerOptions?: LaunchOptions;
+  puppeteerOptions?: Parameters<typeof launch>[0];
   /**
    * Pass a external browser instance, can be used with electron
    */
@@ -127,9 +127,15 @@ export interface CreateConfig {
    * Normalmente, versões mais antigas continuam funcionando por mais um tempo,
    * assim, com essa opção, é possível ter uma janela de tempo maior para se preparar para atualizações.
    * Caso seja definido vazio ou null, será usado a versão atual, ou seja, sem forçar versão específica.
-   * @default 2.2126.x
+   * @default 2.2134.x
    */
   whatsappVersion?: string;
+
+  /**
+   * Define the connected device name in WhatsApp app
+   * @default 'WPPConnect'
+   */
+  deviceName?: string | false;
 }
 export const defaultOptions: CreateConfig = {
   folderNameToken: './tokens',
@@ -148,5 +154,6 @@ export const defaultOptions: CreateConfig = {
   waitForLogin: true,
   logger: defaultLogger,
   tokenStore: 'file',
-  whatsappVersion: '2.2126.x',
+  whatsappVersion: '2.2144.x',
+  deviceName: false,
 };

@@ -16,42 +16,44 @@
  */
 
 export async function sendMessage(to, content) {
-  var chat = Store.Chat.get(to);
-  if (chat) {
-    const newMsgId = await window.WAPI.getNewMessageId(chat.id);
-    const fromwWid = await window.Store.Conn.wid;
-    const message = {
-      id: newMsgId,
-      ack: 0,
+  const chat = await WAPI.sendExist(to);
+
+  if (!chat.erro) {
+    var newId = WPP.chat.generateMessageID(chat.id);
+
+    var message = {
+      id: newId,
       body: content,
-      from: fromwWid,
-      to: chat.id,
-      local: !0,
-      self: 'out',
-      t: parseInt(new Date().getTime() / 1000),
-      isNewMsg: !0,
       type: 'chat',
+      subtype: null,
+      t: parseInt(new Date().getTime() / 1000),
+      from: WPP.whatsapp.UserPrefs.getMaybeMeUser(),
+      to: chat.id,
+      self: 'out',
+      isNewMsg: true,
+      local: true,
+      ack: 0,
+      urlText: null,
+      urlNumber: null,
     };
 
-    await window.Store.addAndSendMsgToChat(chat, message);
+    var result =
+      (
+        await Promise.all(
+          WPP.whatsapp.functions.addAndSendMsgToChat(chat, message)
+        )
+      )[1] || '';
 
-    return newMsgId._serialized;
-  } else {
-    chat = await WAPI.sendExist(to);
-    const message = content;
-    if (!chat.erro) {
-      const result = await chat.sendMessage(message);
-      if (result === 'success' || result === 'OK') {
-        return chat.lastReceivedKey._serialized;
-      } else {
-        const m = { type: 'sendtext', text: message };
-        const To = await WAPI.getchatId(chat.id);
-        const obj = WAPI.scope(To, true, result, null);
-        Object.assign(obj, m);
-        return obj;
-      }
+    if (result === 'success' || result === 'OK') {
+      return newId?._serialized;
     } else {
-      return chat;
+      const m = { type: 'sendtext', text: message };
+      const To = await WAPI.getchatId(chat.id);
+      const obj = WAPI.scope(To, true, result, null);
+      Object.assign(obj, m);
+      return obj;
     }
+  } else {
+    return chat;
   }
 }

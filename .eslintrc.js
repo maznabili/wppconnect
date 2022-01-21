@@ -31,6 +31,8 @@ module.exports = {
   overrides: [
     {
       files: ['src/lib/**/*.js'],
+      parser: '@babel/eslint-parser',
+      plugins: ['@babel'],
       parserOptions: {
         ecmaVersion: 6,
         sourceType: 'module',
@@ -47,6 +49,7 @@ module.exports = {
         Debug: true,
         Store: true,
         WAPI: true,
+        WPP: true,
         webpackJsonp: true,
         WWebJS: true,
       },

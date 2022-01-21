@@ -54,7 +54,22 @@ export class RetrieverLayer extends SenderLayer {
         window['pathSession'] = true;
       });
     }
-
+    if (await this.isMultiDevice()) {
+      return await this.page
+        .evaluate(() => {
+          if (window.localStorage) {
+            return {
+              WABrowserId:
+                window.localStorage.getItem('WABrowserId') || 'MultiDevice',
+              WASecretBundle: 'MultiDevice',
+              WAToken1: 'MultiDevice',
+              WAToken2: 'MultiDevice',
+            };
+          }
+          return null;
+        })
+        .catch(() => null);
+    }
     return await this.page
       .evaluate(() => {
         if (window.localStorage) {
@@ -85,7 +100,9 @@ export class RetrieverLayer extends SenderLayer {
    * @returns array of [0,1,2,3....]
    */
   public async getBlockList() {
-    return await evaluateAndReturn(this.page, () => WAPI.getBlockList());
+    return await evaluateAndReturn(this.page, () =>
+      WPP.blocklist.all().map((b) => b.toString())
+    );
   }
 
   /**
@@ -248,18 +265,25 @@ export class RetrieverLayer extends SenderLayer {
   public async getStatus(contactId: string) {
     return evaluateAndReturn(
       this.page,
-      (contactId) => WAPI.getStatus(contactId),
+      (contactId) => WPP.contact.getStatus(contactId),
       contactId
     );
   }
 
   /**
    * Checks if a number is a valid whatsapp number
+   *
+   * Deprecated in favor of checkNumberStatus
+   * @deprecated Deprecated in favor of checkNumberStatus
    * @category Contact
    * @param contactId, you need to include the @c.us at the end.
    * @returns contact detial as promise
    */
   public async getNumberProfile(contactId: string) {
+    this.log(
+      'warn',
+      'The getNumberProfile function is deprecated, please use checkNumberStatus'
+    );
     return evaluateAndReturn(
       this.page,
       (contactId) => WAPI.getNumberProfile(contactId),

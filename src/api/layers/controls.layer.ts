@@ -32,11 +32,13 @@ export class ControlsLayer extends UILayer {
    * @returns boolean
    */
   public async unblockContact(contactId: string) {
-    return evaluateAndReturn(
+    await evaluateAndReturn(
       this.page,
-      (contactId) => WAPI.unblockContact(contactId),
+      (contactId) => WPP.blocklist.unblockContact(contactId),
       contactId
     );
+
+    return true;
   }
 
   /**
@@ -46,11 +48,13 @@ export class ControlsLayer extends UILayer {
    * @returns boolean
    */
   public async blockContact(contactId: string) {
-    return evaluateAndReturn(
+    await evaluateAndReturn(
       this.page,
-      (contactId) => WAPI.blockContact(contactId),
+      (contactId) => WPP.blocklist.blockContact(contactId),
       contactId
     );
+
+    return true;
   }
 
   /**
@@ -60,11 +64,12 @@ export class ControlsLayer extends UILayer {
    * @returns boolean
    */
   public async markUnseenMessage(contactId: string) {
-    return evaluateAndReturn(
+    await evaluateAndReturn(
       this.page,
-      (contactId) => WAPI.markUnseenMessage(contactId),
+      (contactId) => WPP.chat.markIsUnread(contactId),
       contactId
     );
+    return true;
   }
 
   /**
@@ -74,11 +79,12 @@ export class ControlsLayer extends UILayer {
    * @returns boolean
    */
   public async deleteChat(chatId: string) {
-    return evaluateAndReturn(
+    const result = await evaluateAndReturn(
       this.page,
-      (chatId) => WAPI.deleteConversation(chatId),
+      (chatId) => WPP.chat.delete(chatId),
       chatId
     );
+    return result.status === 200;
   }
 
   /**
@@ -105,20 +111,17 @@ export class ControlsLayer extends UILayer {
    * @returns object
    */
   public async pinChat(chatId: string, option: boolean, nonExistent?: boolean) {
-    return new Promise(async (resolve, reject) => {
-      const result = await evaluateAndReturn(
-        this.page,
-        ({ chatId, option, nonExistent }) => {
-          return WAPI.pinChat(chatId, option, nonExistent);
-        },
-        { chatId, option, nonExistent }
-      );
-      if (result['erro'] == true) {
-        reject(result);
-      } else {
-        resolve(result);
-      }
-    });
+    const result = await evaluateAndReturn(
+      this.page,
+      ({ chatId, option, nonExistent }) => {
+        return WAPI.pinChat(chatId, option, nonExistent);
+      },
+      { chatId, option, nonExistent }
+    );
+    if (result['erro'] == true) {
+      throw result;
+    }
+    return result;
   }
 
   /**
@@ -129,11 +132,13 @@ export class ControlsLayer extends UILayer {
    * @returns boolean
    */
   public async clearChat(chatId: string, keepStarred = true) {
-    return await evaluateAndReturn(
+    const result = await evaluateAndReturn(
       this.page,
-      ({ chatId, keepStarred }) => WAPI.clearChat(chatId, keepStarred),
+      ({ chatId, keepStarred }) => WPP.chat.clear(chatId, keepStarred),
       { chatId, keepStarred }
     );
+
+    return result.status === 200;
   }
 
   /**
@@ -146,14 +151,22 @@ export class ControlsLayer extends UILayer {
   public async deleteMessage(
     chatId: string,
     messageId: string[] | string,
-    onlyLocal = false
+    onlyLocal = false,
+    deleteMediaInDevice = true
   ) {
-    return await evaluateAndReturn(
+    await evaluateAndReturn(
       this.page,
-      ({ contactId, messageId, onlyLocal }) =>
-        WAPI.deleteMessages(contactId, messageId, onlyLocal),
-      { contactId: chatId, messageId, onlyLocal }
+      ({ chatId, messageId, onlyLocal, deleteMediaInDevice }) =>
+        WPP.chat.deleteMessage(
+          chatId,
+          messageId,
+          deleteMediaInDevice,
+          !onlyLocal
+        ),
+      { chatId, messageId, onlyLocal, deleteMediaInDevice }
     );
+
+    return true;
   }
 
   /**

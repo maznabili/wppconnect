@@ -1,13 +1,29 @@
 version: 2
 updates:
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'daily'
+
   - package-ecosystem: npm
     directory: '/'
     schedule:
       interval: daily
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 20
+    versioning-strategy: increase
     ignore:
       - dependency-name: '@types/node'
         versions:
           - '>= 15.a'
-      - dependency-name: '@types/puppeteer'
-      - dependency-name: 'puppeteer'
+      - dependency-name: 'boxen'
+        versions:
+          - '>= 6.a'
+      - dependency-name: 'chalk'
+        versions:
+          - '>= 5.a'
+      - dependency-name: 'file-type'
+        versions:
+          - '>= 17.a'
+      - dependency-name: 'latest-version'
+        versions:
+          - '>= 6.a'

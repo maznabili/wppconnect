@@ -16,8 +16,10 @@
  */
 export async function setProfilePic(obj, id) {
   if (!id) {
-    id = Store.Me.attributes.wid._serialized;
+    id = WPP.whatsapp.UserPrefs.getMaybeMeUser();
   }
+  const wid = WPP.whatsapp.WidFactory.createWid(id);
+
   let base64 = 'data:image/jpeg;base64,';
-  return await Store.Profile.sendSetPicture(id, base64 + obj.b, base64 + obj.a);
+  return await WPP.whatsapp.sendSetPicture(wid, base64 + obj.b, base64 + obj.a);
 }

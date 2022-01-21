@@ -33,42 +33,13 @@ export const storeObjects = [
         : null,
   },
   {
-    id: 'MediaProcess',
-    conditions: (module) => (module.BLOB ? module : null),
-  },
-  {
-    id: 'ChatUtil',
-    conditions: (module) =>
-      module.sendClear && module.clearChat ? module : null,
-  },
-  {
     id: 'GroupInvite',
     conditions: (module) => (module.sendQueryGroupInviteCode ? module : null),
-  },
-  {
-    id: 'Wap',
-    conditions: (module) => (module.createGroup ? module : null),
   },
   {
     id: 'ServiceWorker',
     conditions: (module) =>
       module.default && module.default.killServiceWorker ? module : null,
-  },
-  {
-    id: 'State',
-    conditions: (module) => (module.STATE && module.STREAM ? module : null),
-  },
-  {
-    id: 'WapDelete',
-    conditions: (module) =>
-      module.sendConversationDelete && module.sendConversationDelete.length == 2
-        ? module
-        : null,
-  },
-  {
-    id: 'Conn',
-    conditions: (module) =>
-      module.default && module.Conn ? module.default : null,
   },
   {
     id: 'WapQuery',
@@ -93,49 +64,13 @@ export const storeObjects = [
         : null,
   },
   {
-    id: 'UserConstructor',
-    conditions: (module) =>
-      module.default &&
-      module.default.prototype &&
-      module.default.prototype.isServer &&
-      module.default.prototype.isUser
-        ? module.default
-        : null,
-  },
-  {
-    id: 'SendTextMsgToChat',
-    conditions: (module) =>
-      module.sendTextMsgToChat ? module.sendTextMsgToChat : null,
-  },
-  {
-    id: 'SendSeen',
-    conditions: (module) => (module.sendSeen ? module.sendSeen : null),
-  },
-  {
     id: 'Archive',
     conditions: (module) => (module.setArchive ? module : null),
   },
   {
     id: 'pinChat',
-    conditions: (module) => (module.setPin ? module : null),
-  },
-  {
-    id: 'sendDelete',
-    conditions: (module) => (module.sendDelete ? module.sendDelete : null),
-  },
-  {
-    id: 'addAndSendMsgToChat',
     conditions: (module) =>
-      module.addAndSendMsgToChat ? module.addAndSendMsgToChat : null,
-  },
-  {
-    id: 'sendMsgToChat',
-    conditions: (module) =>
-      module.sendMsgToChat ? module.sendMsgToChat : null,
-  },
-  {
-    id: 'Catalog',
-    conditions: (module) => (module.Catalog ? module.Catalog : null),
+      module.setPin.toString().includes('.unproxy') ? module : null,
   },
   {
     id: 'Perfil',
@@ -144,15 +79,6 @@ export const storeObjects = [
       module.setPushname &&
       !module.getComposeContents
         ? module
-        : null,
-  },
-  {
-    id: 'MsgKey',
-    conditions: (module) =>
-      module.default &&
-      typeof module.default.toString === 'function' &&
-      module.default.toString().includes('MsgKey error: obj is null/undefined')
-        ? module.default
         : null,
   },
   {
@@ -166,11 +92,6 @@ export const storeObjects = [
       module.TemplateMessage && module.HydratedFourRowTemplate ? module : null,
   },
   {
-    id: 'Me',
-    conditions: (module) =>
-      module.PLATFORMS && module.Conn ? module.default : null,
-  },
-  {
     id: 'CallUtils',
     conditions: (module) =>
       module.sendCallEnd && module.parseCall ? module : null,
@@ -179,11 +100,6 @@ export const storeObjects = [
     id: 'Identity',
     conditions: (module) =>
       module.queryIdentity && module.updateIdentity ? module : null,
-  },
-  {
-    id: 'MyStatus',
-    conditions: (module) =>
-      module.getStatus && module.setMyStatus ? module : null,
   },
   {
     id: 'ChatStates',
@@ -198,11 +114,6 @@ export const storeObjects = [
     id: 'GroupActions',
     conditions: (module) =>
       module.sendExitGroup && module.localExitGroup ? module : null,
-  },
-  {
-    id: 'Features',
-    conditions: (module) =>
-      module.FEATURE_CHANGE_EVENT && module.features ? module : null,
   },
   {
     id: 'MessageUtils',
@@ -221,23 +132,6 @@ export const storeObjects = [
     conditions: (module) =>
       module.createMessageKey && module.createDeviceSentMessage
         ? module.createMessageKey
-        : null,
-  },
-  {
-    id: 'Participants',
-    conditions: (module) =>
-      module.addParticipants &&
-      module.removeParticipants &&
-      module.promoteParticipants &&
-      module.demoteParticipants
-        ? module
-        : null,
-  },
-  {
-    id: 'WidFactory',
-    conditions: (module) =>
-      module.isWidlike && module.createWid && module.createWidFromWidLike
-        ? module
         : null,
   },
   {
@@ -290,36 +184,9 @@ export const storeObjects = [
       module.default && module.default.encryptAndUpload ? module.default : null,
   },
   {
-    id: 'Cmd',
-    conditions: (module) =>
-      module.default && module.default.openChatFromUnread ? module : null,
-  },
-  {
-    id: 'ReadSeen',
-    conditions: (module) => (module.sendSeen ? module : null),
-  },
-  {
-    id: 'Block',
-    conditions: (module) =>
-      module.blockContact && module.unblockContact ? module : null,
-  },
-  {
-    id: 'BlockList',
-    conditions: (module) => (module.BlocklistCollection ? module : null),
-  },
-  {
     id: 'Theme',
     conditions: (module) =>
       module.getTheme && module.setTheme ? module : null,
-  },
-  {
-    id: 'Vcard',
-    conditions: (module) => (module.vcardFromContactModel ? module : null),
-  },
-  {
-    id: 'Profile',
-    conditions: (module) =>
-      module.sendSetPicture && module.requestDeletePicture ? module : null,
   },
   {
     id: 'SendMute',
@@ -334,35 +201,6 @@ export const storeObjects = [
     conditions: (module) => (module.Wap ? module : null),
   },
   {
-    id: 'genId',
-    conditions: (module) =>
-      module.default &&
-      typeof module.default === 'function' &&
-      typeof module.default.toString === 'function' &&
-      module.default.toString().match(/crypto/)
-        ? module
-        : null,
-  },
-  {
-    id: 'GroupMetadata',
-    conditions: (module) =>
-      module.default && module.default.handlePendingInvite ? module : null,
-  },
-  {
-    id: 'i10n',
-    conditions: (module) =>
-      module.default && module.default.downloadAppLocale
-        ? module.default
-        : null,
-  },
-  {
-    id: 'NetworkStatus',
-    conditions: (module) =>
-      module.default && module.default._logOnlineOffline
-        ? module.default
-        : null,
-  },
-  {
     id: 'Stream',
     conditions: (module) =>
       module.default && module.default.unobscure ? module.default : null,
@@ -371,25 +209,6 @@ export const storeObjects = [
     id: 'ws2',
     conditions: (module) =>
       module.default && module.default.destroyStorage ? module.default : null,
-  },
-  {
-    id: 'BlobCache',
-    conditions: (module) =>
-      module.default && module.default.getOrCreateURL ? module.default : null,
-  },
-  {
-    id: 'UserPrefs',
-    conditions: (module) => (module.getMaybeMeUser ? module : null),
-  },
-  {
-    id: 'randomMessageId',
-    conditions: (module) =>
-      module.randomId && module.default ? module.default : null,
-  },
-  {
-    id: 'randomId',
-    conditions: (module) =>
-      module.randomId && module.default ? module.randomId : null,
   },
   {
     id: 'sendSetGroupSubject',
@@ -410,5 +229,14 @@ export const storeObjects = [
   {
     id: 'sendCallSignalingMsg',
     conditions: (module) => module.sendCallSignalingMsg,
+  },
+  {
+    id: 'sendCreateGroup',
+    conditions: (module) => module.sendCreateGroup,
+  },
+  {
+    id: 'sendQueryGroupInvite',
+    conditions: (module) =>
+      module.sendQueryGroupInvite ? module.sendQueryGroupInvite : null,
   },
 ];

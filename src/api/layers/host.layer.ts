@@ -27,7 +27,6 @@ import {
   isAuthenticated,
   isInsideChat,
   needsToScan,
-  retrieveQR,
 } from '../../controllers/auth';
 import { sleep } from '../../utils/sleep';
 import { defaultLogger, LogLevel } from '../../utils/logger';
@@ -48,6 +47,7 @@ export class HostLayer {
   readonly tokenStore: TokenStore;
 
   protected autoCloseInterval = null;
+  protected autoCloseCalled = false;
   protected statusFind?: StatusFindCallback = null;
 
   constructor(public page: Page, session?: string, options?: CreateConfig) {
@@ -113,7 +113,12 @@ export class HostLayer {
       this.log('verbose', 'Injecting session token', { type: 'token' });
     }
 
-    await initWhatsapp(this.page, sessionToken, this.options.whatsappVersion);
+    await initWhatsapp(
+      this.page,
+      sessionToken,
+      !this.options?.puppeteerOptions?.userDataDir,
+      this.options.whatsappVersion
+    );
 
     this.page.on('load', () => {
       this.log('verbose', 'Page loaded', { type: 'page' });
@@ -121,18 +126,38 @@ export class HostLayer {
     });
     this.page.on('close', () => {
       this.cancelAutoClose();
-      this.log('error', 'Page Closed', { type: 'page' });
+      this.log('verbose', 'Page Closed', { type: 'page' });
     });
   }
 
   protected async afterPageLoad() {
     this.log('verbose', 'Injecting wapi.js');
+
+    const options = {
+      deviceName: this.options.deviceName,
+    };
+
+    await evaluateAndReturn(
+      this.page,
+      (options) => {
+        (window as any).WPPConfig = options;
+      },
+      options
+    );
+
     await injectApi(this.page)
       .then(() => {
         this.log('verbose', 'wapi.js injected');
-        this.getWAVersion().then((version) => {
-          this.log('info', `WhatsApp WEB version: ${version}`);
-        });
+        this.getWAVersion()
+          .then((version) => {
+            this.log('info', `WhatsApp WEB version: ${version}`);
+          })
+          .catch(() => null);
+        this.getWAJSVersion()
+          .then((version) => {
+            this.log('info', `WA-JS version: ${version}`);
+          })
+          .catch(() => null);
       })
       .catch((e) => {
         this.log('verbose', 'wapi.js failed');
@@ -150,6 +175,7 @@ export class HostLayer {
       !this.page.isClosed()
     ) {
       this.log('info', 'Closing the page');
+      this.autoCloseCalled = true;
       this.statusFind && this.statusFind('autocloseCalled', this.session);
       try {
         this.page.close();
@@ -188,9 +214,6 @@ export class HostLayer {
     let qrResult: ScrapQrcode | undefined;
 
     qrResult = await scrapeImg(this.page).catch(() => undefined);
-    if (!qrResult || !qrResult.urlCode) {
-      qrResult = await retrieveQR(this.page).catch(() => undefined);
-    }
 
     return qrResult;
   }
@@ -206,10 +229,7 @@ export class HostLayer {
       }
 
       const result = await this.getQrCode();
-      if (!result?.urlCode) {
-        break;
-      }
-      if (urlCode !== result.urlCode) {
+      if (result?.urlCode && urlCode !== result.urlCode) {
         urlCode = result.urlCode;
         attempt++;
 
@@ -324,6 +344,17 @@ export class HostLayer {
     }
 
     this.tryAutoClose();
+
+    if (this.autoCloseCalled) {
+      this.log('error', 'Auto Close Called');
+      throw 'Auto Close Called';
+    }
+
+    if (this.page.isClosed()) {
+      this.log('error', 'Page Closed');
+      throw 'Page Closed';
+    }
+
     this.log('error', 'Unknow error');
     throw 'Unknow error';
   }
@@ -353,11 +384,33 @@ export class HostLayer {
   }
 
   /**
+   * @category Host
+   * @returns Current wid connected
+   */
+  public async getWid(): Promise<string> {
+    return await evaluateAndReturn(this.page, () => WAPI.getWid());
+  }
+
+  /**
    * Retrieves WA version
    * @category Host
    */
   public async getWAVersion() {
+    await this.page
+      .waitForFunction(() => WAPI.getWAVersion())
+      .catch(() => null);
+
     return await evaluateAndReturn(this.page, () => WAPI.getWAVersion());
+  }
+
+  /**
+   * Retrieves WA-JS version
+   * @category Host
+   */
+  public async getWAJSVersion() {
+    await this.page.waitForFunction(() => WPP.version).catch(() => null);
+
+    return await evaluateAndReturn(this.page, () => WPP.version);
   }
 
   /**
@@ -366,8 +419,7 @@ export class HostLayer {
    */
   public async getConnectionState(): Promise<SocketState> {
     return await evaluateAndReturn(this.page, () => {
-      //@ts-ignore
-      return Store.State.default.state;
+      return WPP.whatsapp.State.state as SocketState;
     });
   }
 
@@ -415,5 +467,13 @@ export class HostLayer {
    */
   public async stopPhoneWatchdog(interval: number) {
     return await evaluateAndReturn(this.page, () => WAPI.stopPhoneWatchdog());
+  }
+
+  /**
+   * Check the current session is an MultiDevice session
+   * @category Host
+   */
+  public async isMultiDevice() {
+    return await evaluateAndReturn(this.page, () => WPP.auth.isMultiDevice());
   }
 }

@@ -1,3 +1,187 @@
+## 1.12.3 (2022-01-21)
+
+
+### Bug Fixes
+
+* Updated @wppconnect/wa-js to v1.1.9 ([5074de1](https://github.com/wppconnect-team/wppconnect/commit/5074de182f401b8f8e6b382aa513ca2cc65ef488))
+
+
+
+## 1.12.2 (2022-01-15)
+
+
+
+## 1.12.1 (2022-01-14)
+
+
+
+# 1.12.0 (2022-01-08)
+
+
+### Bug Fixes
+
+* Fixed downloadMedia (fix [#463](https://github.com/wppconnect-team/wppconnect/issues/463)) ([ea9ba75](https://github.com/wppconnect-team/wppconnect/commit/ea9ba75ec3e24103a7ccf55b0df43ffc8d46271b))
+
+
+
+## 1.11.1 (2021-12-09)
+
+
+### Bug Fixes
+
+* Fixed getNumberProfile function (fix [#717](https://github.com/wppconnect-team/wppconnect/issues/717)) ([89a0720](https://github.com/wppconnect-team/wppconnect/commit/89a072066991213d301739b0788d19f05a9b0912))
+
+
+
+# 1.11.0 (2021-12-09)
+
+
+### Bug Fixes
+
+* Fixed initialization of onPresenceChanged (fix [#704](https://github.com/wppconnect-team/wppconnect/issues/704)) ([0470ea8](https://github.com/wppconnect-team/wppconnect/commit/0470ea8a0fd15727f91e18c913b96f3c1e1f79a9))
+
+
+
+## 1.10.3 (2021-11-18)
+
+
+
+## 1.10.2 (2021-11-15)
+
+
+### Bug Fixes
+
+* Fixed call of createWid function (fix [#647](https://github.com/wppconnect-team/wppconnect/issues/647)) ([c381000](https://github.com/wppconnect-team/wppconnect/commit/c3810003a4f145f9c3ec54f49cde97ddbe01a164))
+
+
+
+## 1.10.1 (2021-11-11)
+
+
+### Features
+
+* Updated to latest version of WhatsApp ([f6d01a3](https://github.com/wppconnect-team/wppconnect/commit/f6d01a390db9577f46fee0072637ece981e54780))
+
+
+
+# 1.10.0 (2021-11-06)
+
+
+
+## 1.9.4 (2021-10-21)
+
+
+
+## 1.9.3 (2021-10-21)
+
+
+### Bug Fixes
+
+* Fixed close method ([#579](https://github.com/wppconnect-team/wppconnect/issues/579)) ([ef42485](https://github.com/wppconnect-team/wppconnect/commit/ef42485505e9920b5b7826674949ed9d5e36d4e1))
+
+
+
+## 1.9.2 (2021-10-12)
+
+
+### Features
+
+* Added onRevokedMessage (close [#434](https://github.com/wppconnect-team/wppconnect/issues/434)) ([b5df5bb](https://github.com/wppconnect-team/wppconnect/commit/b5df5bbcc3418204744057cf45089c3bb2228c57))
+
+
+
+## 1.9.1 (2021-10-02)
+
+
+### Features
+
+* Added option to use setProfilePic using base64 (close [#505](https://github.com/wppconnect-team/wppconnect/issues/505)) ([87f1841](https://github.com/wppconnect-team/wppconnect/commit/87f184128c2b458f128ff26ac9ea081537b4c2a4))
+
+
+
+# 1.9.0 (2021-10-02)
+
+
+
+## 1.8.14 (2021-09-19)
+
+
+### Bug Fixes
+
+* Allow to define chat type in sendMessageOptions (close [#504](https://github.com/wppconnect-team/wppconnect/issues/504)) ([bf76179](https://github.com/wppconnect-team/wppconnect/commit/bf761794559c02a5f7a2d842e68fd6562b68b0cb))
+
+
+
+## 1.8.13 (2021-08-19)
+
+
+### Bug Fixes
+
+* Fixed file mime-type detection (fix [#409](https://github.com/wppconnect-team/wppconnect/issues/409)) ([1609e34](https://github.com/wppconnect-team/wppconnect/commit/1609e34e89b02eaba57cd2c0ef17e94393e89916))
+
+
+
+## 1.8.12 (2021-08-05)
+
+
+
+## 1.8.11 (2021-08-04)
+
+
+### Features
+
+* Added setOnlinePresence function to define your presence ([627d1a5](https://github.com/wppconnect-team/wppconnect/commit/627d1a5f3a76ea4813420a4fc25784362497da39))
+
+
+
+## 1.8.10 (2021-07-31)
+
+
+### Bug Fixes
+
+* Corrigido erro "null to object" ao enviar mensagem (fix [#378](https://github.com/wppconnect-team/wppconnect/issues/378)) ([ec103b9](https://github.com/wppconnect-team/wppconnect/commit/ec103b9cae33b993f95cacdb2a1d35fd3e4ecacc))
+
+
+
+## 1.8.9 (2021-07-27)
+
+
+### Bug Fixes
+
+* Corrigido a função de fixar conversas (pinChat) (fix [#338](https://github.com/wppconnect-team/wppconnect/issues/338)) ([f6bf1f3](https://github.com/wppconnect-team/wppconnect/commit/f6bf1f3f1598719d38eeb9d84bf3a9c0d87de18d))
+
+
+
+## 1.8.8 (2021-07-27)
+
+
+### Bug Fixes
+
+* Corrigido problema de ES Module (fix [#362](https://github.com/wppconnect-team/wppconnect/issues/362)) ([dcdefc4](https://github.com/wppconnect-team/wppconnect/commit/dcdefc4e7e0dbeb5cd3678ee0b7e7f92e8210dba))
+
+
+
+## 1.8.7 (2021-07-26)
+
+
+
+## 1.8.6 (2021-07-23)
+
+
+
+## [1.8.5](https://github.com/wppconnect-team/wppconnect/compare/v1.8.4...v1.8.5) (2021-07-20)
+
+
+
+## 1.8.4 (2021-07-20)
+
+
+### Bug Fixes
+
+* Corrigido o envio de arquivos de tipos de áudio via URL (fix [#329](https://github.com/wppconnect-team/wppconnect/issues/329)) ([6e8b836](https://github.com/wppconnect-team/wppconnect/commit/6e8b836f40ecda9df4870b09d6fc11410a15e1f6))
+
+
+
 ## 1.8.3 (2021-07-14)
 
 

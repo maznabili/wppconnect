@@ -32,6 +32,25 @@ export class Whatsapp extends BusinessLayer {
 
     let connected = false;
 
+    const removeToken = async () => {
+      this.log('info', 'Session Unpaired', { type: 'session' });
+      const removed = await Promise.resolve(
+        this.tokenStore.removeToken(this.session)
+      );
+
+      if (removed) {
+        this.log('verbose', 'Token removed', { type: 'token' });
+      }
+    };
+
+    if (this.page) {
+      this.page.on('close', async () => {
+        if (!connected) {
+          await removeToken();
+        }
+      });
+    }
+
     this.onStateChange(async (state) => {
       switch (state) {
         case SocketState.CONNECTED:
@@ -59,20 +78,15 @@ export class Whatsapp extends BusinessLayer {
         case SocketState.UNPAIRED:
         case SocketState.UNPAIRED_IDLE:
           setTimeout(async () => {
-            this.log('info', 'Session Unpaired', { type: 'session' });
-            const removed = await Promise.resolve(
-              this.tokenStore.removeToken(this.session)
-            );
-
-            if (removed) {
-              this.log('verbose', 'Token removed', { type: 'token' });
-            }
+            await removeToken();
 
             // Fire only after a success connection and disconnection
             if (connected && this.statusFind) {
-              connected = false;
-              this.statusFind('desconnectedMobile', session);
+              try {
+                this.statusFind('desconnectedMobile', session);
+              } catch (error) {}
             }
+            connected = false;
           }, 1000);
           break;
       }
@@ -102,19 +116,12 @@ export class Whatsapp extends BusinessLayer {
       messageId = messageId.id;
     }
 
-    const result = await evaluateAndReturn(
+    return await evaluateAndReturn(
       this.page,
-      (messageId) =>
-        WAPI.downloadMedia(messageId).catch((e) => ({
-          __error: e,
-        })),
+      async (messageId) =>
+        WPP.util.blobToBase64(await WPP.chat.downloadMedia(messageId)),
       messageId
     );
-
-    if (typeof result == 'object' && '__error' in result) {
-      throw result.__error;
-    }
-    return result as string;
   }
 
   /**
@@ -140,7 +147,7 @@ export class Whatsapp extends BusinessLayer {
    * @returns boolean
    */
   public async logout() {
-    return await evaluateAndReturn(this.page, () => WAPI.logout());
+    return await evaluateAndReturn(this.page, () => WPP.auth.logout());
   }
 
   /**
@@ -148,22 +155,21 @@ export class Whatsapp extends BusinessLayer {
    * @internal
    */
   public async close() {
-    const closing = async (waPage: {
-      browser: () => any;
-      isClosed: () => any;
-      close: () => any;
-    }) => {
-      if (waPage) {
-        const browser = await waPage.browser();
-        const pid = browser.process() ? browser?.process().pid : null;
-        if (!waPage.isClosed()) await waPage.close();
-        if (browser) await browser.close();
-        if (pid) treekill(pid, 'SIGKILL');
-      }
-    };
+    const browser = this.page.browser();
+
+    if (!this.page.isClosed()) {
+      await this.page.close().catch(() => null);
+    }
+
+    await browser.close().catch(() => null);
+
     try {
-      await closing(this.page);
+      const process = browser.process();
+      if (process) {
+        treekill(process.pid, 'SIGKILL');
+      }
     } catch (error) {}
+
     return true;
   }
 
@@ -212,7 +218,7 @@ export class Whatsapp extends BusinessLayer {
     let res: any;
     try {
       while (haventGottenImageYet) {
-        res = await axios.get(mediaUrl.trim(), options);
+        res = await axios.get<any>(mediaUrl.trim(), options);
         if (res.status == 200) {
           haventGottenImageYet = false;
         } else {

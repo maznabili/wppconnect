@@ -16,65 +16,18 @@
  */
 
 export async function getMessages(chatId, params = {}, serialize = true) {
-  // Definição de valores padrões
-  if (typeof params === 'undefined') {
-    params = {};
-  }
-  if (typeof params.count === 'undefined') {
-    params.count = 20;
-  }
-  if (typeof params.direction === 'undefined') {
-    params.direction = 'before';
-  }
+  const msgs = await WPP.chat.getMessages(chatId, params);
 
-  // Corrige o ID do chat
-  if (typeof chatId === 'object' && chatId._serialized) {
-    chatId = chatId._serialized;
+  if (!Array.isArray(msgs)) {
+    const error = new Error(`Failed to fetch messages for ${chatId}`);
+
+    Object.assign(error, msgs);
+
+    throw error;
   }
-
-  const chat = window.Store.Chat.get(chatId);
-  if (!chat) {
-    throw {
-      error: true,
-      code: 'chat_not_found',
-      message: 'Chat not found',
-    };
-  }
-
-  const chatWid = Store.WidFactory.createWid(chatId);
-
-  // É valido apenas before e after
-  let direction = 'before';
-  if (params.direction === 'after') {
-    direction = 'after';
-  }
-
-  const queryData = {
-    remote: chatWid,
-    count: params.count,
-    owner: params.fromMe,
-  };
-
-  // Caso tenha informado o ID da mensagem, a consulta se realizará a partir dela
-  if (params.id) {
-    try {
-      const msgKey = window.Store.MsgKey.fromString(params.id);
-      if (msgKey) {
-        queryData.id = msgKey.id;
-        queryData.owner = msgKey.fromMe;
-      }
-    } catch (error) {
-      queryData.id = params.id;
-    }
-  } else {
-    // Pesquisa sem ID sempre trará mais uma mensagem do que solicitado
-    queryData.count--;
-  }
-
-  const msgs = await Store.WapQuery.msgFindQuery(direction, queryData);
 
   const result = msgs
-    .map((m) => new Store.Msg.modelClass(m))
+    .map((m) => new WPP.whatsapp.MsgStore.modelClass(m))
     .map((m) => WAPI.processMessageObj(m, true, true));
 
   return result;

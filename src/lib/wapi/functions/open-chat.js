@@ -16,8 +16,8 @@
  */
 
 export async function openChat(chatId) {
-  const chat = Store.Chat.get(chatId);
-  const result = Store.Cmd.default.openChatBottom(chat);
+  const chat = WPP.whatsapp.ChatStore.get(chatId);
+  const result = WPP.whatsapp.Cmd.openChatBottom(chat);
   return result;
 }
 
@@ -29,13 +29,13 @@ export async function openChat(chatId) {
  * @returns {{wasVisible: boolean, alignAt: string}}: {wasVisible: false, alignAt: "center"}
  */
 export async function openChatAt(chatId, messageId) {
-  const chat = Store.Chat.get(chatId);
+  const chat = WPP.whatsapp.ChatStore.get(chatId);
   const atMessage = chat.msgs.models.find((model) => model.id.id === messageId);
   const args = {
     collection: chat.msgs,
     msg: atMessage,
     isUnreadDivider: false,
   };
-  const result = await Store.Cmd.default._openChat(chat, args);
+  const result = await WPP.whatsapp.Cmd._openChat(chat, args);
   return result;
 }

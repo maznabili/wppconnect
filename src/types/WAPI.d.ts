@@ -36,26 +36,11 @@ import {
 import { SessionToken } from '../token-store';
 
 interface WAPI {
-  addParticipant: (groupId: string, contactId: string | string[]) => boolean;
   allNewMessagesListener: (callback: Function) => void;
   archiveChat: (chatId: string, option: boolean) => boolean;
   arrayBufferToBase64: (buffer: ArrayBuffer) => string;
-  blockContact: (messageId: string) => boolean;
   checkNumberStatus: (contactId: string) => Promise<WhatsappProfile>;
-  clearChat: (chatId: string, keepStarred: boolean) => void;
-  createGroup: (
-    groupName: string,
-    contactId: string | string[]
-  ) => GroupCreation;
-  deleteConversation: (chatId: string) => boolean;
-  deleteMessages: (
-    contactId: string,
-    messageId: string[] | string,
-    onlyLocal: boolean
-  ) => Promise<boolean>;
-  demoteParticipant: (groupId: string, contactId: string | string[]) => void;
   downloadFile: (data: string) => Promise<string | boolean>;
-  downloadMedia: (messageId: string) => Promise<string>;
   forwardMessages: (
     to: string,
     messages: string | string[],
@@ -73,7 +58,6 @@ interface WAPI {
   getAllNewMessages: () => Message[];
   getAllUnreadMessages: () => PartialMessage[];
   getBatteryLevel: () => number;
-  getBlockList: () => Contact[];
   getBusinessProfilesProducts: (to: string) => any;
   getOrderbyMsg: (messageId: string) => any;
   getChat: (contactId: string) => Chat;
@@ -86,12 +70,12 @@ interface WAPI {
   getGroupInviteLink: (chatId: string) => Promise<string>;
   getGroupParticipantIDs: (groupId: string) => Id[];
   getHost: () => HostDevice;
+  getWid: () => string;
   getListMute: (type?: string) => object;
   getMessageById: (messageId: string) => Promise<Message>;
   getMessages: (chatId: string, params: GetMessagesParam) => Promise<Message[]>;
   getNumberProfile: (contactId: string) => WhatsappProfile;
   getSessionTokenBrowser: (removePath?: boolean) => SessionToken;
-  getStatus: (contactId: string) => ContactStatus;
   getTheme: () => string;
   getUnreadMessages: (
     includeMe: boolean,
@@ -111,7 +95,6 @@ interface WAPI {
   ) => Message[];
   loadEarlierMessages: (contactId: string) => Message[];
   logout: () => Promise<boolean>;
-  markUnseenMessage: (messageId: string) => boolean;
   onAddedToGroup: (callback: Function) => any;
   onIncomingCall: (callback: Function) => any;
   onInterfaceChange: (callback: Function) => void;
@@ -131,34 +114,26 @@ interface WAPI {
     option: boolean,
     nonExistent?: boolean
   ) => Promise<object>;
-  promoteParticipant: (groupId: string, contactId: string | string[]) => void;
-  removeParticipant: (groupId: string, contactId: string | string[]) => void;
-  reply: (to: string, content: string, quotedMsg: string) => Promise<string>;
   rejectCall: (callId?: string) => Promise<number>;
   revokeGroupInviteLink: (chatId: string) => Promise<string>;
   restartService: () => boolean;
   sendChatstate: (chatState: string, chatId: string) => void;
-  sendContactVcard: (
-    to: string,
-    contact: string,
-    name?: string
-  ) => Promise<object>;
-  sendContactVcardList: (
-    to: string,
-    contacts: (string | { id: string; name: string })[]
-  ) => Promise<object>;
   sendFile: (
     base64: string,
     to: string,
     filename: string,
     caption: string,
-    type?: string
+    type?: string,
+    quotedMessageId?: string,
+    isViewOnce?: boolean
   ) => Promise<SendFileResult>;
   sendImage: (
     imgBase64: string,
     to: string,
     filename: string,
-    caption?: string
+    caption?: string,
+    quotedMessageId?: string,
+    isViewOnce?: boolean
   ) => Promise<SendFileResult>;
   sendImageAsSticker: (
     webpBase64: string,
@@ -190,7 +165,6 @@ interface WAPI {
     title: string
   ) => Promise<object>;
   sendMessage: (to: string, content: string) => Promise<string>;
-  sendMessageMentioned: (...args: any) => any;
   sendMessageOptions: (
     chat: any,
     content: any,
@@ -208,7 +182,9 @@ interface WAPI {
     base64: string,
     to: string,
     filename: string,
-    caption: string
+    caption: string,
+    done: () => void,
+    quotedMessageId?: string
   ) => Promise<SendPttResult>;
   sendVideoAsGif: (
     base64: string,
@@ -228,7 +204,7 @@ interface WAPI {
   setGroupSubject: (groupId: string, title: string) => Promise<object>;
   setMessagesAdminsOnly: (chatId: string, option: boolean) => boolean;
   setMyName: (name: string) => void;
-  setMyStatus: (to: string) => void;
+  setOnlinePresence: (online: boolean) => void;
   setProfilePic: (path: string, to?: string) => Promise<boolean>;
   setTemporaryMessages: (chatId: string, value: string) => Promise<boolean>;
   setTheme: (theme?: string) => boolean;
@@ -237,17 +213,12 @@ interface WAPI {
     star: boolean
   ) => Promise<number>;
   startPhoneWatchdog: (interval: number) => void;
-  startTyping: (to: string) => void;
   stopPhoneWatchdog: () => void;
-  stopTyping: (to: string) => void;
   subscribePresence: (id: string | string[]) => Promise<number>;
   takeOver: () => boolean;
   unsubscribePresence: (id: string | string[]) => Promise<number>;
-  unblockContact: (messageId: string) => boolean;
-  waitForStore: (store: string | string[], callback?: Function) => Promise<any>;
   waitNewAcknowledgements: (callback: Function) => void;
   waitNewMessages: (rmCallback: boolean, callback: Function) => void;
-  sendSeen: (to: string) => void;
   _profilePicfunc: (contactId: string) => Promise<ProfilePicThumbObj>;
 }
 

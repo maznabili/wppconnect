@@ -17,7 +17,7 @@
 
 export function scope(id, erro, status, text = null) {
   let e = {
-    me: Store.Me.attributes,
+    me: WPP.whatsapp.Conn.attributes,
     to: id,
     erro: erro,
     text: text,
@@ -27,7 +27,7 @@ export function scope(id, erro, status, text = null) {
 }
 export async function getchatId(chatId) {
   var to = await WAPI.getChatById(chatId),
-    objTo = to.lastReceivedKey,
+    objTo = to.lastReceivedKey || {},
     extend = {
       formattedName: to.contact.formattedName,
       isBusiness: to.contact.isBusiness,
@@ -40,14 +40,18 @@ export async function getchatId(chatId) {
 }
 
 export async function sendExist(chatId, returnChat = true, Send = true) {
+  if (!chatId) {
+    return scope(chatId, true, 500, 'Chat ID is empty');
+  }
+
   // Check chat exists (group is always a chat)
   let chat = await window.WAPI.getChat(chatId);
 
   if (!chat && chatId === 'status@broadcast') {
-    chat = new Store.Chat.modelClass({
-      id: Store.WidFactory.createWid('status@broadcast'),
+    chat = new WPP.whatsapp.ChatStore.modelClass({
+      id: WPP.whatsapp.WidFactory.createWid('status@broadcast'),
     });
-    Store.Chat.add(chat);
+    WPP.whatsapp.ChatStore.add(chat);
     chat = await window.WAPI.getChat(chatId); // Fix some methods
   }
 
@@ -60,7 +64,7 @@ export async function sendExist(chatId, returnChat = true, Send = true) {
     }
 
     // Load chat ID for non contact
-    await window.Store.Chat.find(ck.id);
+    await WPP.chat.find(ck.id);
 
     chatId = ck.id._serialized;
     chat = await window.WAPI.getChat(chatId);
@@ -70,7 +74,7 @@ export async function sendExist(chatId, returnChat = true, Send = true) {
     return scope(chatId, true, 404);
   }
   if (Send) {
-    await window.Store.SendSeen(chat, false);
+    await WPP.chat.markIsRead(chat.id).catch(() => null);
   }
   if (returnChat) {
     return chat;

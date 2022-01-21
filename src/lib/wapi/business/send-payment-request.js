@@ -21,9 +21,9 @@ window.WAPI.sendPaymentRequest = async function (
   currency,
   noteMessage
 ) {
-  var chat = Store.Chat.get(chatId);
+  var chat = WPP.whatsapp.ChatStore.get(chatId);
   var tempMsg = Object.create(chat.msgs.filter((msg) => msg.__x_isSentByMe)[0]);
-  var newId = window.WAPI.getNewMessageId(chatId);
+  var newId = WPP.chat.generateMessageID(chatId);
   var extend = {
     ack: 0,
     id: newId,
@@ -43,5 +43,5 @@ window.WAPI.sendPaymentRequest = async function (
     ),
   };
   Object.assign(tempMsg, extend);
-  await Store.addAndSendMsgToChat(chat, tempMsg);
+  await WPP.whatsapp.functions.addAndSendMsgToChat(chat, tempMsg);
 };

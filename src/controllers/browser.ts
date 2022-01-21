@@ -22,7 +22,7 @@ import * as rimraf from 'rimraf';
 import * as waVersion from '@wppconnect/wa-version';
 import axios from 'axios';
 import { addExitCallback } from 'catch-exit';
-import { Browser, BrowserContext, Page, Request } from 'puppeteer';
+import { Browser, BrowserContext, Page } from 'puppeteer';
 import puppeteer from 'puppeteer-extra';
 import { CreateConfig } from '../config/create-config';
 import { puppeteerConfig } from '../config/puppeteer.config';
@@ -33,12 +33,32 @@ import { WebSocketTransport } from './websocket';
 import { Logger } from 'winston';
 import { SessionToken } from '../token-store';
 
+export async function unregisterServiceWorker(page: Page) {
+  await page.evaluateOnNewDocument(() => {
+    // Remove existent service worker
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      })
+      .catch((err) => null);
+
+    // Disable service worker registration
+    // @ts-ignore
+    navigator.serviceWorker.register = new Promise(() => {});
+  });
+}
+
 /**
  * Força o carregamento de uma versão específica do WhatsApp WEB
  * @param page Página a ser injetada
  * @param version Versão ou expressão semver
  */
 export async function setWhatsappVersion(page: Page, version: string) {
+  await unregisterServiceWorker(page);
+
   const body = waVersion.getPageContent(version);
 
   await page.setRequestInterception(true);
@@ -64,22 +84,25 @@ export async function setWhatsappVersion(page: Page, version: string) {
 export async function initWhatsapp(
   page: Page,
   token?: SessionToken,
+  clear = true,
   version?: string
 ) {
   await page.setUserAgent(useragentOverride);
 
   // Auth with token
-  await injectSessionToken(page, token);
+  await injectSessionToken(page, token, clear);
 
   if (version) {
     await setWhatsappVersion(page, version);
   }
 
   const timeout = 10 * 1000;
-  await Promise.race([
-    page.goto(puppeteerConfig.whatsappUrl, { timeout }).catch(() => {}),
-    page.waitForSelector('body', { timeout }).catch(() => {}),
-  ]);
+  await page
+    .goto(puppeteerConfig.whatsappUrl, {
+      timeout,
+      waitUntil: 'domcontentloaded',
+    })
+    .catch(() => {});
 
   return page;
 }
@@ -88,6 +111,7 @@ export async function injectApi(page: Page) {
   const injected = await page
     .evaluate(() => {
       // @ts-ignore
+      localStorage.setItem('md-opted-in', 'false');
       return (
         typeof window.WAPI !== 'undefined' &&
         typeof window.Store !== 'undefined'
@@ -100,6 +124,26 @@ export async function injectApi(page: Page) {
   }
 
   await page.addScriptTag({
+    path: require.resolve('@wppconnect/wa-js'),
+  });
+
+  await page
+    .waitForFunction(
+      () => {
+        return typeof window.WPP !== 'undefined' && window.WPP.isReady;
+      },
+      {
+        timeout: 60000,
+      }
+    )
+    .catch(() => false);
+
+  await page
+    .evaluate(() => {
+      WPP.chat.defaultSendMessageOptions.createChat = true;
+    })
+    .catch(() => false);
+  await page.addScriptTag({
     path: require.resolve(
       path.join(__dirname, '../../dist/lib/wapi', 'wapi.js')
     ),
@@ -108,7 +152,6 @@ export async function injectApi(page: Page) {
   // Make sure WAPI is initialized
   return await page
     .waitForFunction(() => {
-      // @ts-ignore
       return (
         typeof window.WAPI !== 'undefined' &&
         typeof window.Store !== 'undefined'
@@ -222,7 +265,7 @@ async function getTransport(browserWS: string) {
   try {
     const endpointURL =
       browserWS.replace(/ws(s)?:/, 'http$1:') + '/json/version';
-    const data = await axios.get(endpointURL).then((r) => r.data);
+    const data = await axios.get<any>(endpointURL).then((r) => r.data);
 
     return await WebSocketTransport.create(data.webSocketDebuggerUrl, 10000);
   } catch (e) {}

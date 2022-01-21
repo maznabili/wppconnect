@@ -24,7 +24,7 @@ export async function sendLocation(
   var chat = await WAPI.sendExist(chatId);
 
   if (!chat.erro) {
-    var newId = await window.WAPI.getNewMessageId(chat.id);
+    var newId = WPP.chat.generateMessageID(chat.id);
 
     var message = {
       ack: 0,
@@ -32,7 +32,7 @@ export async function sendLocation(
       local: true,
       self: 'out',
       t: parseInt(new Date().getTime() / 1000),
-      from: Store.UserPrefs.getMaybeMeUser(),
+      from: WPP.whatsapp.UserPrefs.getMaybeMeUser(),
       to: chat.id,
       isNewMsg: true,
       type: 'location',
@@ -42,7 +42,11 @@ export async function sendLocation(
     };
 
     var result =
-      (await Promise.all(Store.addAndSendMsgToChat(chat, message)))[1] || '';
+      (
+        await Promise.all(
+          WPP.whatsapp.functions.addAndSendMsgToChat(chat, message)
+        )
+      )[1] || '';
     var m = {
         latitude: latitude,
         longitude: longitude,

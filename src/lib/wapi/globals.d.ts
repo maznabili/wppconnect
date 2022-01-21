@@ -15,15 +15,17 @@
  * along with WPPConnect.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export async function unblockContact(_id) {
-  if (!_id) {
-    return false;
+import type * as wajs from '@wppconnect/wa-js';
+
+declare global {
+  interface Window {
+    WPP: typeof wajs;
   }
-  const __contact = window.Store.Contact.get(_id);
-  if (__contact !== undefined) {
-    await Store.Block.unblockContact(__contact);
-    return true;
-  } else {
-    return false;
+  const WPP: typeof wajs;
+}
+
+declare global {
+  interface Window {
+    Store: any;
   }
 }

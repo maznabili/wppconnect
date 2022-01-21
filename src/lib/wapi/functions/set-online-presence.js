@@ -15,15 +15,14 @@
  * along with WPPConnect.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-export async function blockContact(_id) {
-  if (!_id) {
-    return false;
+export async function setOnlinePresence(online) {
+  if (typeof online === 'undefined') {
+    online = true;
   }
-  const __contact = window.Store.Contact.get(_id);
-  if (__contact !== undefined) {
-    await Store.Block.blockContact(__contact);
-    return true;
+
+  if (online) {
+    await WPP.whatsapp.ChatPresence.sendPresenceAvailable();
   } else {
-    return false;
+    await WPP.whatsapp.ChatPresence.sendPresenceUnavailable();
   }
 }

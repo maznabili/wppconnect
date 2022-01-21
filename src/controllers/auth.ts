@@ -19,7 +19,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as qrcode from 'qrcode-terminal';
-import { ScrapQrcode } from '../api/model/qrcode';
 import { puppeteerConfig } from '../config/puppeteer.config';
 import { isValidSessionToken } from '../token-store';
 
@@ -110,42 +109,11 @@ export async function asciiQr(code: string): Promise<string> {
   });
 }
 
-export async function retrieveQR(
-  page: puppeteer.Page
-): Promise<ScrapQrcode | undefined> {
-  const hasCanvas = await page.evaluate(
-    () => document.querySelector('canvas') !== null
-  );
-
-  if (!hasCanvas) {
-    return undefined;
-  }
-
-  await page.addScriptTag({
-    path: require.resolve(path.join(__dirname, '../lib/jsQR', 'jsQR.js')),
-  });
-
-  return await page
-    .evaluate(() => {
-      const canvas = document.querySelector('canvas') || null;
-      if (canvas !== null) {
-        const context = canvas.getContext('2d') || null;
-        if (context !== null) {
-          // @ts-ignore
-          const code = jsQR(
-            context.getImageData(0, 0, canvas.width, canvas.height).data,
-            canvas.width,
-            canvas.height
-          );
-          return { urlCode: code.data, base64Image: canvas.toDataURL() };
-        }
-      }
-      return undefined;
-    })
-    .catch(() => undefined);
-}
-
-export async function injectSessionToken(page: puppeteer.Page, token?: any) {
+export async function injectSessionToken(
+  page: puppeteer.Page,
+  token?: any,
+  clear = true
+) {
   if (!token || !isValidSessionToken(token)) {
     token = {};
   }
@@ -153,7 +121,7 @@ export async function injectSessionToken(page: puppeteer.Page, token?: any) {
   await page.setRequestInterception(true);
 
   // @todo Move to another file
-  const reqHandler = (req: puppeteer.Request) => {
+  const reqHandler = function (req: puppeteer.PageEventObject['request']) {
     if (req.url().endsWith('wppconnect-banner.jpeg')) {
       req.respond({
         body: fs.readFileSync(
@@ -208,14 +176,20 @@ export async function injectSessionToken(page: puppeteer.Page, token?: any) {
   page.on('request', reqHandler);
 
   await page.goto(puppeteerConfig.whatsappUrl);
+
+  if (clear) {
+    await page.evaluate((session) => {
+      localStorage.clear();
+    });
+  }
   await page.evaluate((session) => {
-    localStorage.clear();
     Object.keys(session).forEach((key) => {
       localStorage.setItem(key, session[key]);
     });
   }, token as any);
 
   // Disable
-  page.off('request', reqHandler);
+  page.removeAllListeners('request');
+
   await page.setRequestInterception(false);
 }

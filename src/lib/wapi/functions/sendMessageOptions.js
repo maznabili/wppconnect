@@ -24,7 +24,8 @@ import { getMessageById } from './get-message-by-id';
  * @param {string} options object aditionais
  */
 export async function sendMessageOptions(chatId, content, options = {}) {
-  const chat = Store.Chat.get(chatId);
+  const chat = WPP.chat.get(chatId) || (await WPP.chat.find(chatId));
+
   let attOptions = {};
   if (options.attachment) {
     attOptions = await WWebJS.processMediaData(
@@ -50,7 +51,7 @@ export async function sendMessageOptions(chatId, content, options = {}) {
 
   if (options.mentionedJidList) {
     options.mentionedJidList = options.mentionedJidList.map(
-      (cId) => window.Store.Contact.get(cId).id
+      (cId) => WPP.whatsapp.ContactStore.get(cId).id
     );
   }
 
@@ -67,19 +68,19 @@ export async function sendMessageOptions(chatId, content, options = {}) {
 
   let vcardOptions = {};
   if (options.contactCard) {
-    let contact = window.Store.Contact.get(options.contactCard);
+    let contact = WPP.whatsapp.ContactStore.get(options.contactCard);
     vcardOptions = {
-      body: window.Store.VCard.vcardFromContactModel(contact).vcard,
+      body: WPP.whatsapp.VCard.vcardFromContactModel(contact).vcard,
       type: 'vcard',
       vcardFormattedName: contact.formattedName,
     };
     delete options.contactCard;
   } else if (options.contactCardList) {
     let contacts = options.contactCardList.map((c) =>
-      window.Store.Contact.get(c)
+      WPP.whatsapp.ContactStore.get(c)
     );
     let vcards = contacts.map((c) =>
-      window.Store.VCard.vcardFromContactModel(c)
+      WPP.whatsapp.VCard.vcardFromContactModel(c)
     );
     vcardOptions = {
       type: 'multi_vcard',
@@ -94,11 +95,11 @@ export async function sendMessageOptions(chatId, content, options = {}) {
   ) {
     delete options.parseVCards;
     try {
-      const parsed = await window.Store.VCard.parseVcard(content);
+      const parsed = await WPP.whatsapp.VCard.parseVcard(content);
       if (parsed) {
         vcardOptions = {
           type: 'vcard',
-          vcardFormattedName: await window.Store.VCard.vcardGetNameFromParsed(
+          vcardFormattedName: await WPP.whatsapp.VCard.vcardGetNameFromParsed(
             parsed
           ),
         };
@@ -111,7 +112,7 @@ export async function sendMessageOptions(chatId, content, options = {}) {
   if (options.linkPreview) {
     delete options.linkPreview;
     const link = await window.Store.Validators.findLink(content);
-    if (link) {
+    if (link && !WPP.auth.isMultiDevice()) {
       const preview = await window.Store.Wap2.default.queryLinkPreview(
         link.url
       );
@@ -120,10 +121,9 @@ export async function sendMessageOptions(chatId, content, options = {}) {
       options = { ...options, ...preview };
     }
   }
-  const newMsgId = await window.WAPI.getNewMessageId(chat.id);
-  const fromwWid = await window.Store.Conn.wid;
+  const newMsgId = WPP.chat.generateMessageID(chat.id);
+  const fromwWid = WPP.whatsapp.UserPrefs.getMaybeMeUser();
   const message = {
-    ...options,
     id: newMsgId,
     ack: 0,
     body: content,
@@ -134,13 +134,14 @@ export async function sendMessageOptions(chatId, content, options = {}) {
     t: parseInt(new Date().getTime() / 1000),
     isNewMsg: !0,
     type: 'chat',
+    ...options,
     ...locationOptions,
     ...attOptions,
     ...quotedMsgOptions,
     ...vcardOptions,
   };
 
-  await window.Store.addAndSendMsgToChat(chat, message);
+  await WPP.whatsapp.functions.addAndSendMsgToChat(chat, message);
 
   return newMsgId._serialized;
 }
